@@ -1,6 +1,6 @@
 <?php
 
-namespace Mediadata\Utils;
+namespace MediadataTv\Utils;
 
 use function ksort;
 use function array_filter;

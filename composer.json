@@ -1,0 +1,10 @@
+{
+    "name": "mediadata/php-utils",
+    "description": "Generic utils PHP classes (DRY) :D",
+    "type": "library",
+    "require": {
+        "php": ">=7.1.0"
+    },
+    "license": "gpl-3.0",
+    "minimum-stability": "stable"
+}

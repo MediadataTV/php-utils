@@ -1,5 +1,5 @@
 {
-    "name": "mediadata/php-utils",
+    "name": "mediadata-tv/php-utils",
     "description": "Generic utils PHP classes (DRY) :D",
     "type": "library",
     "require": {

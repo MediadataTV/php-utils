@@ -99,7 +99,7 @@ class FileUtils
      * @param $outputFolder
      * @return string|null
      */
-    protected function createZipFile($filesGenerated, $filename, $outputFolder): ?string
+    public static function createZipFile($filesGenerated, $filename, $outputFolder): ?string
     {
         if (count($filesGenerated) > 0) {
             $zip          = new ZipArchive();

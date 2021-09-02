@@ -3,7 +3,11 @@
     "description": "Generic utils PHP classes (DRY) :D",
     "type": "library",
     "require": {
-        "php": ">=7.1.0"
+      "php": ">=7.1.0",
+      "ext-mbstring": "*",
+      "ext-intl": "*",
+      "ext-json": "*",
+      "ext-zip": "*"
     },
     "license": "gpl-3.0",
     "minimum-stability": "stable",

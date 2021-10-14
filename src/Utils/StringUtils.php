@@ -261,6 +261,8 @@ class StringUtils
                 'Ó'        => 'O',
                 'Ú'        => 'U',
                 'Ř'        => 'R',
+                'Ç'        => 'C',
+                'Ñ'        => 'N',
                 "\xc2\xA0" => '',
             ],
             $additionalReplaces

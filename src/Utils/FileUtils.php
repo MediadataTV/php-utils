@@ -3,8 +3,12 @@
 namespace MediadataTv\Utils;
 
 use ZipArchive;
+use SplFileInfo;
 use RuntimeException;
+use FilesystemIterator;
 use InvalidArgumentException;
+use RecursiveIteratorIterator;
+use RecursiveDirectoryIterator;
 use function basename;
 use function file_exists;
 use function is_dir;
@@ -16,6 +20,29 @@ use function unlink;
 
 class FileUtils
 {
+    /**
+     * @param string $directory
+     * @param bool   $recursive
+     * @return SplFileInfo[]
+     */
+    public static function listFiles(string $directory, bool $recursive = false): array
+    {
+        $output = [];
+        if ($recursive === true) {
+            foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory, FilesystemIterator::SKIP_DOTS), RecursiveIteratorIterator::LEAVES_ONLY) as $file) {
+                $output[] = $file;
+            }
+        } else {
+            foreach (new FilesystemIterator($directory, FilesystemIterator::SKIP_DOTS) as $file) {
+                if ($file->isFile()) {
+                    $output[] = $file;
+                }
+            }
+        }
+
+        return $output;
+    }
+
     /**
      * @param string|null $basePath
      * @param string      $prefix
@@ -34,6 +61,7 @@ class FileUtils
         if (is_dir($tempFile)) {
             return $tempFile;
         }
+
         return null;
     }
 
@@ -55,7 +83,7 @@ class FileUtils
     /**
      * @param $path
      */
-    public static function createDir($path):void
+    public static function createDir($path): void
     {
         if (!is_dir($path) && !@mkdir($path, 0775, true)) {
             throw new InvalidArgumentException(sprintf('The directory "%s" does not exist and could not be created.', $path));
@@ -75,11 +103,12 @@ class FileUtils
         $files  = (array)$files;
         $output = [];
         foreach ($files as $f) {
-            $fileName    = basename($f);
+            $fileName = basename($f);
             $destPath = sprintf('%s%s', $folder, $fileName);
             @rename($f, $destPath);
             $output[] = $destPath;
         }
+
         return $output;
     }
 
@@ -109,9 +138,11 @@ class FileUtils
                     $zip->addFile($f, basename($f));
                 }
                 $zip->close();
+
                 return $filenamePath;
             }
         }
+
         return null;
     }
 }

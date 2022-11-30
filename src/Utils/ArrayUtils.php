@@ -112,7 +112,7 @@ class ArrayUtils
      * @param string $delimiter
      * @param mixed  $defaultValue
      *
-     * @return bool
+     * @return null|mixed
      */
     public static function getNestedArrayValue($array, $path, string $delimiter = '/', $defaultValue = null)
     {

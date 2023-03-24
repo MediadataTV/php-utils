@@ -176,4 +176,55 @@ class ArrayUtilsTest extends TestCase
         ArrayUtils::setNestedArrayValue($copyArray, 'prices/@[code=ES]/price', '29.99 EUR');
     }
 
+    public function testMergeArraySuccess(): void
+    {
+        $left     = [
+            'number'               => 1,
+            'true'                 => true,
+            'null'                 => null,
+            'empty'                => '',
+            'string'               => 'string [left]',
+            'incoming_null'        => 'I have value [left]',
+            'null_incoming_null'   => null,
+            'incoming_empty'       => 'I have no empty string [left]',
+            'empty_incoming_empty' => '',
+        ];
+        $right    = [
+            'number'               => 20,
+            'true'                 => false,
+            'null'                 => 'overwrite null values [right]',
+            'new_null'             => null,
+            'new_empty'            => '',
+            'new_string'           => 'I am a new string coming from right',
+            'empty'                => 'overwrite empty values [right]',
+            'string'               => 'string [right]',
+            'incoming_null'        => null,
+            'null_incoming_null'   => null,
+            'incoming_empty'       => '',
+            'empty_incoming_empty' => '',
+        ];
+        $expected = [
+            'number'               => 20,
+            'true'                 => false,
+            'null'                 => 'overwrite null values [right]',
+            'new_null'             => null,
+            'new_empty'            => '',
+            'new_string'           => 'I am a new string coming from right',
+            'empty'                => 'overwrite empty values [right]',
+            'string'               => 'string [right]',
+            'incoming_null'        => 'I have value [left]',
+            'null_incoming_null'   => null,
+            'incoming_empty'       => 'I have no empty string [left]',
+            'empty_incoming_empty' => '',
+        ];
+        $arrays   = [$left, $right];
+
+        $merged = ArrayUtils::mergeNonEmpty(...$arrays);
+        ksort($expected);
+        ksort($merged);
+        $this->assertSame($expected, $merged);
+        $this->assertNotSame($merged, $left);
+        $this->assertNotSame($merged, $right);
+    }
+
 }

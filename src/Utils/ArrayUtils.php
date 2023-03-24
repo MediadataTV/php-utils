@@ -7,6 +7,7 @@ use function trim;
 use function ksort;
 use function var_dump;
 use function preg_match;
+use function array_shift;
 use function array_filter;
 use function array_key_exists;
 use function explode;
@@ -306,6 +307,24 @@ class ArrayUtils
         // If the array keys of the keys match the keys, then the array must
         // not be associative (e.g. the keys array looked like {0:0, 1:1...}).
         return array_keys($keys) !== $keys;
+    }
+
+    /**
+     * @param array ...$arrays
+     * @return array
+     */
+    public static function mergeNonEmpty(array ...$arrays): array
+    {
+        $output = array_shift($arrays);  // remove the first row and push it into the result array
+        foreach ($arrays as $a) {
+            foreach ($a as $k => $v) {
+                if (!array_key_exists($k, $output) || ($v !== null && $v !== '')) {
+                    $output[$k] = $v;
+                }
+            }
+        }
+
+        return $output;
     }
 
 }

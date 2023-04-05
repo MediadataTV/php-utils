@@ -161,7 +161,7 @@ class FileUtils
      * @param bool $append
      * @return false|int
      */
-    protected function writeFile($filename, $data, bool $append = false)
+    public static function writeFile($filename, $data, bool $append = false)
     {
         $mode = 'w+b';
         if ($append === true) {
@@ -182,7 +182,7 @@ class FileUtils
      * @param $filename
      * @return false|string
      */
-    protected function readFile($filename)
+    public static function readFile($filename)
     {
         $f = @fopen($filename, 'r+b');
         if (!$f) {

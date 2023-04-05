@@ -9,7 +9,13 @@ use FilesystemIterator;
 use InvalidArgumentException;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use function fopen;
+use function fread;
+use function fwrite;
+use function fclose;
 use function basename;
+use function filesize;
+use function is_string;
 use function file_exists;
 use function is_dir;
 use function mkdir;
@@ -123,13 +129,16 @@ class FileUtils
     }
 
     /**
-     * @param $filesGenerated
-     * @param $filename
-     * @param $outputFolder
+     * @param string|array $filesGenerated
+     * @param              $filename
+     * @param              $outputFolder
      * @return string|null
      */
     public static function createZipFile($filesGenerated, $filename, $outputFolder): ?string
     {
+        if (is_string($filesGenerated)) {
+            $filesGenerated = [$filesGenerated];
+        }
         if (count($filesGenerated) > 0) {
             $zip          = new ZipArchive();
             $filenamePath = sprintf('%s%s', $outputFolder, $filename);
@@ -144,5 +153,45 @@ class FileUtils
         }
 
         return null;
+    }
+
+    /**
+     * @param      $filename
+     * @param      $data
+     * @param bool $append
+     * @return false|int
+     */
+    protected function writeFile($filename, $data, bool $append = false)
+    {
+        $mode = 'w+b';
+        if ($append === true) {
+            $mode = 'a+b';
+        }
+        $f = @fopen($filename, $mode);
+        if (!$f) {
+            return false;
+        }
+        $bytes = fwrite($f, $data);
+        fclose($f);
+
+        return $bytes;
+
+    }
+
+    /**
+     * @param $filename
+     * @return false|string
+     */
+    protected function readFile($filename)
+    {
+        $f = @fopen($filename, 'r+b');
+        if (!$f) {
+            return false;
+        }
+        $bytes = fread($f, filesize($filename));
+        fclose($f);
+
+        return $bytes;
+
     }
 }

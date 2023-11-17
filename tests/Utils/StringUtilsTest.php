@@ -25,5 +25,33 @@ class StringUtilsTest extends TestCase
         $this->assertNotEquals('AB', StringUtils::removeEmoji($testString, false));
     }
 
+    public function testStartsWith()
+    {
+        $testCases = [
+            ['string' => 'ABCDEF', 'starts' => 'ABC', 'result' => true],
+            ['string' => 'ABC', 'starts' => 'ABC', 'result' => true],
+            ['string' => 'AB', 'starts' => 'ABC', 'result' => false],
+            ['string' => 'ABCDEF', 'starts' => 'aBC', 'result' => false],
+            ['string' => 'AB', 'starts' => 'aBC', 'result' => false],
+        ];
+        foreach ($testCases as $case) {
+            $this->assertEquals($case['result'], StringUtils::startsWith($case['string'], $case['starts']));
+        }
+    }
+
+    public function testEndsWith()
+    {
+        $testCases = [
+            ['string' => 'ABCDEF', 'ends' => 'DEF', 'result' => true],
+            ['string' => 'ABC', 'ends' => 'ABC', 'result' => true],
+            ['string' => 'AB', 'ends' => 'BC', 'result' => false],
+            ['string' => 'ABCDEF', 'ends' => 'dEF', 'result' => false],
+            ['string' => 'AB', 'ends' => 'aBC', 'result' => false],
+        ];
+        foreach ($testCases as $case) {
+            $this->assertEquals($case['result'], StringUtils::endsWith($case['string'], $case['ends']));
+        }
+    }
+
 
 }

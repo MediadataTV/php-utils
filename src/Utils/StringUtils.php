@@ -8,6 +8,7 @@ use function strtr;
 use function substr;
 use function hexdec;
 use function strpos;
+use function strlen;
 use function sprintf;
 use function bin2hex;
 use function mb_strlen;
@@ -16,6 +17,7 @@ use function array_merge;
 use function json_decode;
 use function array_values;
 use function rawurlencode;
+use function substr_compare;
 use function html_entity_decode;
 use function htmlentities;
 use function levenshtein;
@@ -487,5 +489,15 @@ class StringUtils
         $revert = ['%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')'];
 
         return strtr(rawurlencode($str), $revert);
+    }
+
+    public static function endsWith(string $str, string $end): bool
+    {
+        return (@substr_compare($str, $end, -strlen($end)) === 0);
+    }
+
+    public static function startsWith(string $str, string $start): bool
+    {
+        return (@substr_compare($str, $start, 0, strlen($start)) === 0);
     }
 }

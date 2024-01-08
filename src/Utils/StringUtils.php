@@ -500,4 +500,9 @@ class StringUtils
     {
         return (@substr_compare($str, $start, 0, strlen($start)) === 0);
     }
+
+    public static function mbTrim($string, $trimChars = '\s')
+    {
+        return preg_replace('/^[' . $trimChars . ']*(?U)(.*)[' . $trimChars . ']*$/u', '\\1', $string);
+    }
 }

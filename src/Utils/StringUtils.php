@@ -405,6 +405,17 @@ class StringUtils
     }
 
     /**
+     * @param string      $str
+     * @param string|null $encoding
+     * @return string
+     */
+    public static function ucfirstMultiByte(string $str, ?string $encoding = null)
+    {
+        return mb_strtoupper(mb_substr($str, 0, 1), $encoding) . mb_strtolower(mb_substr($str, 1), $encoding);
+    }
+
+
+    /**
      * @param string $text
      * @param bool   $outputHtmlEncoded
      *

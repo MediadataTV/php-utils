@@ -53,5 +53,21 @@ class StringUtilsTest extends TestCase
         }
     }
 
+    public function testUcFirstMultiByte()
+    {
+        $testCases = [
+            ['string' => 'Abc Def Ghi', 'result' => 'Abc def ghi'],
+            ['string' => 'Àbc Def Ghi', 'result' => 'Àbc def ghi'],
+            ['string' => 'Abc DEF Ghì', 'result' => 'Abc def ghì'],
+            ['string' => 'ABC DEF GHI', 'result' => 'Abc def ghi'],
+            ['string' => 'àÌ', 'result' => 'Àì'],
+            ['string' => 'Ì', 'result' => 'Ì'],
+            ['string' => '', 'result' => ''],
+        ];
+        foreach ($testCases as $case) {
+            $this->assertEquals($case['result'], StringUtils::ucfirstMultiByte($case['string']));
+        }
+    }
+
 
 }

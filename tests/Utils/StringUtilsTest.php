@@ -6,6 +6,63 @@ use MediadataTv\Utils\StringUtils;
 class StringUtilsTest extends TestCase
 {
 
+    private array $emojiTestCasesCodepoints = [];
+
+    protected function setUp(): void
+    {
+        $emojiData  = file_get_contents('tests/data/StringUtils/emoji-test.txt');
+        $lines      = explode("\n", $emojiData);
+        $skipStatus = ['unqualified'];
+        foreach ($lines as $line) {
+            // Skip empty lines and comment lines
+
+            if (empty($line) || $line[0] === '#') {
+                continue;
+            }
+
+            // Extract the emoji and expected output from the line
+            $parts        = explode(';', $line);
+            $emojisArr    = explode(' ', trim($parts[0]));
+            $descriptions = explode('#', $parts[1]);
+            $status       = trim($descriptions[0]);
+            $emoji        = trim(preg_replace('/E\d{1,}\.\d{1,}.*/u', '', trim($descriptions[1])));
+
+
+            $codepoints = [];
+            if (!in_array($status, $skipStatus, true)) {
+                foreach ($emojisArr as $codepoint) {
+                    $codepoints[] = trim($codepoint);
+                }
+            }
+            $this->emojiTestCasesCodepoints[] = $codepoints;
+        }
+    }
+
+    public function testRemoveAllEmojis()
+    {
+        foreach ($this->emojiTestCasesCodepoints as $codepoints) {
+            $emoji  = StringUtils::unicodeHexToString($codepoints);
+            $output = StringUtils::removeEmojisAndModifiers($emoji);
+            $this->assertEquals('', $output, sprintf('Failed to remove emoji: %s [Codepoint: %s]', $emoji, implode(', ', $codepoints)));
+        }
+    }
+
+    public function testRemoveEmojisLeaveStandardChars()
+    {
+        $testCases = [
+            'ABCDEFGHIJKLMNOPQRSTUVWXYZ'                   => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+            'abcdefghijklmnopqrstuvwxyz'                   => 'abcdefghijklmnopqrstuvwxyz',
+            '0123456789'                                   => '0123456789',
+            'ºª·|!¡@#$%^&*()_-+={}:;¨<>?¿,./~\\\'"[]'      => 'ºª·|!¡@#$%^&*()_-+={}:;¨<>?¿,./~\\\'"[]',
+            'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßðÐ'             => 'ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÑÒÓÔÕÖØÙÚÛÜÝÞßðÐ',
+            'àáâãäåæçèéêëìíîïñòóôõöøùúûüýþÿŒœĀāĆćĖėĢģŠšŦŧ' => 'àáâãäåæçèéêëìíîïñòóôõöøùúûüýþÿŒœĀāĆćĖėĢģŠšŦŧ',
+            '01234567899️⃣0️⃣1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣'           => '0123456789',
+        ];
+        foreach ($testCases as $input => $expected) {
+            $output = StringUtils::removeEmojisAndModifiers($input);
+            $this->assertEquals($expected, $output, sprintf('Error removing emojis: %s', $input));
+        }
+    }
 
     public function testRemoveEmoji()
     {

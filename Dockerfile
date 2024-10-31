@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     && docker-php-ext-install -j$(nproc) zip intl
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
-
+VOLUME /opt/app/vendor
 WORKDIR /opt/app
 
 COPY . /opt/app

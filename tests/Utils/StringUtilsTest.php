@@ -113,16 +113,33 @@ class StringUtilsTest extends TestCase
     public function testUcFirstMultiByte()
     {
         $testCases = [
-            ['string' => 'Abc Def Ghi', 'result' => 'Abc def ghi'],
-            ['string' => 'Àbc Def Ghi', 'result' => 'Àbc def ghi'],
-            ['string' => 'Abc DEF Ghì', 'result' => 'Abc def ghì'],
-            ['string' => 'ABC DEF GHI', 'result' => 'Abc def ghi'],
-            ['string' => 'àÌ', 'result' => 'Àì'],
-            ['string' => 'Ì', 'result' => 'Ì'],
-            ['string' => '', 'result' => ''],
+            'Abc Def Ghi'   => 'Abc def ghi',
+            'Àbc Def Ghi'   => 'Àbc def ghi',
+            'Abc DEF Ghì'   => 'Abc def ghì',
+            'ABC DEF GHI'   => 'Abc def ghi',
+            'àÌ'            => 'Àì',
+            'Ì'             => 'Ì',
+            ''              => '',
+            '¡Abc Def Ghi!' => '¡Abc def ghi!',
+            '!hellO!'       => '!Hello!',
+            '!@#$abcDEF'    => '!@#$Abcdef',
+            '123Ábc!@#$'    => '123Ábc!@#$',
+            '123ábc!@#$'    => '123Ábc!@#$',
+            '1(3Ábc!@#$'    => '1(3Ábc!@#$',
+            '1(3ábc!@#$'    => '1(3Ábc!@#$',
+            '-23Ábc!@#$'    => '-23Ábc!@#$',
+            '-23ábc!@#$'    => '-23Ábc!@#$',
+            '1É3Ábc!@#$'    => '1É3ábc!@#$',
+            '1é3ábc!@#$'    => '1É3ábc!@#$',
+            '!@#$'          => '!@#$',
+            '!hE LlO!'      => '!He llo!',
+            '!@#$abcD EF'   => '!@#$Abcd ef',
+            '123abc!@#$'    => '123Abc!@#$',
+            '1!@2#$3'       => '1!@2#$3',
         ];
-        foreach ($testCases as $case) {
-            $this->assertEquals($case['result'], StringUtils::ucfirstMultiByte($case['string']));
+
+        foreach ($testCases as $input => $result) {
+            $this->assertEquals($result, StringUtils::ucfirstMultiByte($input), sprintf('Failed evaluating assert for: "%s"', $input));
         }
     }
 

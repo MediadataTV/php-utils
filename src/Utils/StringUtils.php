@@ -544,7 +544,32 @@ class StringUtils
      */
     public static function ucfirstMultiByte(string $str, ?string $encoding = null)
     {
-        return mb_strtoupper(mb_substr($str, 0, 1), $encoding) . mb_strtolower(mb_substr($str, 1), $encoding);
+        //return mb_strtoupper(mb_substr($str, 0, 1), $encoding) . mb_strtolower(mb_substr($str, 1), $encoding);
+        // Detect the encoding if none is provided
+        $encoding = $encoding ?: mb_detect_encoding($str, 'UTF-8, ISO-8859-1, GBK, GB2312, BIG5', true);
+
+        $length = mb_strlen($str, $encoding);
+        $i      = 0;
+
+        // Find the first alphabetic character
+        while ($i < $length && !preg_match('/^\p{L}$/u', mb_substr($str, $i, 1, $encoding))) {
+            $i++;
+        }
+
+        // Get the initial non-alphabetic characters and the first alphabetic character
+        $initialChars = mb_substr($str, 0, $i, $encoding);
+        $firstChar    = $i < $length ? mb_substr($str, $i, 1, $encoding) : '';
+
+        // If no alphabetic character is found, return the original string
+        if ($firstChar === '') {
+            return $str;
+        }
+
+        // Get the remaining part of the string
+        $remainder = mb_substr($str, $i + 1, $length - $i - 1, $encoding);
+
+        // Convert the first alphabetic character to uppercase and the rest to lowercase
+        return $initialChars . mb_strtoupper($firstChar, $encoding) . mb_strtolower($remainder, $encoding);
     }
 
 

@@ -144,4 +144,76 @@ class StringUtilsTest extends TestCase
     }
 
 
+    public function testCamelCaseToHyphen()
+    {
+        $testCases = [
+            'helloWorld'        => 'hello-world',
+            'thisIsATest'       => 'this-is-a-test',
+            'singleWord'        => 'single-word',
+            ''                  => '', // Edge case: empty string
+            'alreadyHyphenated' => 'already-hyphenated',
+            'noChange'          => 'no-change',
+            '123Number'         => '123-number',      // Unexpected input: starts with a number
+            'spaceSeparated'    => 'space-separated', // Edge case: space in the string
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $this->assertEquals($expected, StringUtils::camelCaseToHyphen($input));
+        }
+    }
+
+    public function testUnderscoreToCamelCase()
+    {
+        $testCases = [
+            'hello_world'        => 'helloWorld',
+            'this_is_a_test'     => 'thisIsATest',
+            'single_word'        => 'singleWord',
+            ''                   => '', // Edge case: empty string
+            'already_camel_case' => 'alreadyCamelCase',
+            'no_change'          => 'noChange',
+            '123_number'         => '123Number',      // Unexpected input: starts with a number
+            'space_separated'    => 'spaceSeparated', // Edge case: space in the string
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $this->assertEquals($expected, StringUtils::underscoreToCamelCase($input));
+        }
+    }
+
+    public function testHyphenToCamelCase()
+    {
+        $testCases = [
+            'hello-world'        => 'helloWorld',
+            'this-is-a-test'     => 'thisIsATest',
+            'single-word'        => 'singleWord',
+            ''                   => '', // Edge case: empty string
+            'already-camel-case' => 'alreadyCamelCase',
+            'no-change'          => 'noChange',
+            '123-number'         => '123Number',      // Unexpected input: starts with a number
+            'space-separated'    => 'spaceSeparated', // Edge case: space in the string
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $this->assertEquals($expected, StringUtils::hyphenToCamelCase($input));
+        }
+    }
+
+    public function testCamelCaseToUnderscore()
+    {
+        $testCases = [
+            'helloWorld'       => 'hello_world',
+            'thisIsATest'      => 'this_is_a_test',
+            'singleWord'       => 'single_word',
+            ''                 => '', // Edge case: empty string
+            'alreadyCamelCase' => 'already_camel_case',
+            'noChange'         => 'no_change',
+            '123Number'        => '123_number',      // Unexpected input: starts with a number
+            'spaceSeparated'   => 'space_separated', // Edge case: space in the string
+        ];
+
+        foreach ($testCases as $input => $expected) {
+            $this->assertEquals($expected, StringUtils::camelCaseToUnderscore($input));
+        }
+    }
+
 }

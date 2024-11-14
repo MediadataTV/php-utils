@@ -15,13 +15,17 @@ use function dechex;
 use function sprintf;
 use function bin2hex;
 use function implode;
+use function explode;
 use function mb_split;
 use function mb_strlen;
 use function array_keys;
 use function array_walk;
 use function preg_split;
+use function strtoupper;
+use function strtolower;
 use function array_merge;
 use function json_decode;
+use function array_shift;
 use function array_values;
 use function rawurlencode;
 use function substr_compare;
@@ -262,7 +266,7 @@ class StringUtils
     /**
      * @param $string
      *
-     * @return false|string
+     * @return array|string|string[]
      */
     public static function transliterateToAscii($string)
     {
@@ -674,4 +678,79 @@ class StringUtils
     {
         return preg_replace('/^[' . $trimChars . ']*(?U)(.*)[' . $trimChars . ']*$/u', '\\1', $string);
     }
+
+    /**
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function underscoreToCamelCase(string $string): string
+    {
+        $string          = StringUtils::transliterateToAscii($string);
+        $parts           = explode('_', $string);
+        $camelCaseString = array_shift($parts); // Start with the first part in lowercase
+
+        foreach ($parts as $part) {
+            $camelCaseString .= ucfirst($part); // Capitalize the first letter of each subsequent part
+        }
+
+        return $camelCaseString;
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function camelCaseToUnderscore(string $string): string
+    {
+        $string = StringUtils::transliterateToAscii($string);
+
+        return preg_replace_callback(
+            '/([A-Z])/',
+            static function ($m) {
+                return '_' . strtolower($m[1]);
+            },
+            $string
+        );
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function hyphenToCamelCase(string $string): string
+    {
+        $string = StringUtils::transliterateToAscii($string);
+
+        $parts           = explode('-', $string);
+        $camelCaseString = array_shift($parts); // Start with the first part in lowercase
+
+        foreach ($parts as $part) {
+            $camelCaseString .= ucfirst($part); // Capitalize the first letter of each subsequent part
+        }
+
+        return $camelCaseString;
+    }
+
+    /**
+     * @param string $string
+     *
+     * @return string
+     */
+    public static function camelCaseToHyphen(string $string): string
+    {
+        $string = StringUtils::transliterateToAscii($string);
+
+        return preg_replace_callback(
+            '/([A-Z])/',
+            static function ($m) {
+                return '-' . strtolower($m[1]);
+            },
+            $string
+        );
+    }
+
+
 }

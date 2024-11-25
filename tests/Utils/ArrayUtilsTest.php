@@ -8,52 +8,84 @@ class ArrayUtilsTest extends TestCase
 {
 
 
-    protected $testArray = [
-        'plain_null'         => null,
-        'plain_int'          => 100,
-        'plain_string'       => 'string',
-        'plain_empty_string' => '',
-        'nested_array'       => [
-            'nested value 0',
-            'nested value 1',
-            'nested value 2',
-        ],
-        'nested_hash'        => [
-            'nested_hash_0' => [
-                'nested_hash_0_0' => 'value 0_0',
-                'nested_hash_0_1' => 'value 0_1',
-                'nested_hash_0_2' => 'value 0_2',
+    private array $testArray;
+    private array $testArrayUnset;
+
+    protected function setUp(): void
+    {
+        $this->testArray = [
+            'plain_null'         => null,
+            'plain_int'          => 100,
+            'plain_string'       => 'string',
+            'plain_empty_string' => '',
+            'nested_array'       => [
+                'nested value 0',
+                'nested value 1',
+                'nested value 2',
             ],
-            'nested_hash_1' => [
-                'nested_hash_1_0' => 'value 1_0',
-                'nested_hash_1_1' => 'value 1_1',
+            'nested_hash'        => [
+                'nested_hash_0' => [
+                    'nested_hash_0_0' => 'value 0_0',
+                    'nested_hash_0_1' => 'value 0_1',
+                    'nested_hash_0_2' => 'value 0_2',
+                ],
+                'nested_hash_1' => [
+                    'nested_hash_1_0' => 'value 1_0',
+                    'nested_hash_1_1' => 'value 1_1',
+                ],
+                'nested_hash_2' => [
+                    'nested_hash_2_0' => 'value 2_0',
+                    'nested_hash_2_1' => 'value 2_1',
+                    'nested_hash_2_2' => 'value 2_2',
+                    'nested_hash_2_3' => 'value 2_3',
+                    'nested_hash_2_4' => 'value 2_4',
+                ],
             ],
-            'nested_hash_2' => [
-                'nested_hash_2_0' => 'value 2_0',
-                'nested_hash_2_1' => 'value 2_1',
-                'nested_hash_2_2' => 'value 2_2',
-                'nested_hash_2_3' => 'value 2_3',
-                'nested_hash_2_4' => 'value 2_4',
+            'prices'             => [
+                [
+                    'code'   => 'ES',
+                    'active' => true,
+                    'price'  => '9.99 EUR',
+                ],
+                [
+                    'code'   => 'GB',
+                    'active' => false,
+                    'price'  => '9.99 GBP',
+                ],
+                [
+                    'code'   => 'US',
+                    'active' => false,
+                    'price'  => '9.99 USD',
+                ],
             ],
-        ],
-        'prices'             => [
-            [
-                'code'   => 'ES',
-                'active' => true,
-                'price'  => '9.99 EUR',
+        ];
+
+        $this->testArrayUnset = [
+            'user'    => [
+                'profile'  => [
+                    'name'     => 'John',
+                    'age'      => 30,
+                    'contacts' => [
+                        'email'     => 'john@example.com',
+                        'phone'     => '1234567890',
+                        'addresses' => [
+                            'home' => '123 Main St',
+                            'work' => '456 Office Blvd',
+                        ],
+                    ],
+                ],
+                'settings' => [
+                    'theme'         => 'dark',
+                    'notifications' => true,
+                ],
             ],
-            [
-                'code'   => 'GB',
-                'active' => false,
-                'price'  => '9.99 GBP',
-            ],
-            [
-                'code'   => 'US',
-                'active' => false,
-                'price'  => '9.99 USD',
-            ],
-        ],
-    ];
+            'empty'   => [],
+            'scalar'  => 'value',
+            'numeric' => [1, 2, 3],
+            0         => 'zero-index',
+            'null'    => null,
+        ];
+    }
 
     public function testGetValueNotExists(): void
     {
@@ -225,6 +257,134 @@ class ArrayUtilsTest extends TestCase
         $this->assertSame($expected, $merged);
         $this->assertNotSame($merged, $left);
         $this->assertNotSame($merged, $right);
+    }
+
+
+    public function testBasicUnset(): void
+    {
+        $paths  = ['user/profile/age'];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        $this->assertArrayHasKey('user', $result);
+        $this->assertArrayHasKey('profile', $result['user']);
+        $this->assertArrayNotHasKey('age', $result['user']['profile']);
+        $this->assertArrayHasKey('name', $result['user']['profile']);
+    }
+
+    public function testMultiplePathsUnset(): void
+    {
+        $paths = [
+            'user/profile/contacts/phone',
+            'user/settings/theme',
+            'scalar',
+        ];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        $this->assertArrayHasKey('user', $result);
+        $this->assertArrayNotHasKey('phone', $result['user']['profile']['contacts']);
+        $this->assertArrayNotHasKey('theme', $result['user']['settings']);
+        $this->assertArrayNotHasKey('scalar', $result);
+    }
+
+    public function testCustomDelimiter(): void
+    {
+        $paths  = ['user.profile.contacts.phone'];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths, '.');
+
+        $this->assertArrayHasKey('user', $result);
+        $this->assertArrayNotHasKey('phone', $result['user']['profile']['contacts']);
+    }
+
+    public function testDeepNestedPath(): void
+    {
+        $paths  = ['user/profile/contacts/addresses/work'];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        $this->assertArrayHasKey('addresses', $result['user']['profile']['contacts']);
+        $this->assertArrayNotHasKey('work', $result['user']['profile']['contacts']['addresses']);
+        $this->assertArrayHasKey('home', $result['user']['profile']['contacts']['addresses']);
+    }
+
+    public function testNonExistentPaths(): void
+    {
+        $paths = [
+            'user/profile/nonexistent',
+            'nonexistent/path',
+            'user/profile/contacts/nonexistent/deeper',
+        ];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        // Array should remain unchanged
+        $this->assertEquals($this->testArrayUnset, $result);
+    }
+
+    public function testEmptyPaths(): void
+    {
+        $paths  = [];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        $this->assertEquals($this->testArrayUnset, $result);
+    }
+
+    public function testNumericKeys(): void
+    {
+        $paths = [
+            'numeric/0',
+            '0',  // Root level numeric key
+        ];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        $this->assertArrayHasKey('numeric', $result);
+        $this->assertNotContains(1, $result['numeric']);
+        $this->assertArrayNotHasKey(0, $result);
+    }
+
+    public function testPathThroughNonArrays(): void
+    {
+        $paths = [
+            'scalar/something',              // scalar is not an array
+            'null/something',                // null is not an array
+            'user/profile/name/impossible',  // name is not an array
+        ];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        // Array should remain unchanged
+        $this->assertEquals($this->testArrayUnset, $result);
+    }
+
+    public function testEmptyStringPath(): void
+    {
+        $paths  = [''];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        // Array should remain unchanged
+        $this->assertEquals($this->testArrayUnset, $result);
+    }
+
+    public function testPathWithEmptySegments(): void
+    {
+        $paths  = ['user//profile///age'];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        // Should not unset anything due to invalid path
+        $this->assertEquals($this->testArrayUnset, $result);
+    }
+
+    public function testOriginalArrayUnchanged(): void
+    {
+        $original = $this->testArrayUnset;
+        $paths    = ['user/profile/age'];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        // Original array should remain unchanged
+        $this->assertEquals($original, $this->testArrayUnset);
+        // Result should be different
+        $this->assertNotEquals($original, $result);
     }
 
 }

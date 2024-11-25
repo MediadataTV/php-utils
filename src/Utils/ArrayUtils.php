@@ -327,4 +327,53 @@ class ArrayUtils
         return $output;
     }
 
+    /**
+     * Unsets values in a nested array based on provided paths
+     *
+     * @param array  $array     The input array to modify
+     * @param array  $paths     Array of paths where each path is a string with elements separated by delimiter
+     * @param string $delimiter The delimiter used to separate path elements (default: '/')
+     * @return array The modified array
+     *
+     * @example
+     * $array = ['user' => ['profile' => ['name' => 'John', 'age' => 30]]];
+     * $paths = ['user/profile/age'];
+     * ArrayUtils::unsetNestedArray($array, $paths); // removes age from nested array
+     */
+    public static function unsetNestedArray(array $array, array $paths, string $delimiter = '/'): array
+    {
+        // Create a working copy of the array
+        $result = $array;
+
+        // Process each path
+        foreach ($paths as $path) {
+            // Split the path into segments
+            $segments = explode($delimiter, $path);
+
+            // Reference to navigate through array
+            $current = &$result;
+
+            // Navigate to the parent of the target element
+            $segmentCount = count($segments);
+            for ($i = 0; $i < $segmentCount - 1; $i++) {
+                $segment = $segments[$i];
+
+                // If segment doesn't exist or is not an array, skip this path
+                if (!isset($current[$segment]) || !is_array($current[$segment])) {
+                    continue 2;
+                }
+
+                $current = &$current[$segment];
+            }
+
+            // Unset the target element
+            $lastSegment = $segments[$segmentCount - 1];
+            if (isset($current[$lastSegment])) {
+                unset($current[$lastSegment]);
+            }
+        }
+
+        return $result;
+    }
+
 }

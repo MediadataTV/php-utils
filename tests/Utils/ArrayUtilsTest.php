@@ -387,4 +387,17 @@ class ArrayUtilsTest extends TestCase
         $this->assertNotEquals($original, $result);
     }
 
+    public function testUnsetNullValueUnchanged(): void
+    {
+        $original = $this->testArrayUnset;
+        $paths    = ['null'];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        // Original array should remain unchanged
+        $this->assertEquals($original, $this->testArrayUnset);
+        // Result should be different
+        $this->assertNotEquals($original, $result);
+    }
+
 }

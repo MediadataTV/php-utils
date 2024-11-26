@@ -359,7 +359,7 @@ class ArrayUtils
                 $segment = $segments[$i];
 
                 // If segment doesn't exist or is not an array, skip this path
-                if (!isset($current[$segment]) || !is_array($current[$segment])) {
+                if (!array_key_exists($segment, $current) || !is_array($current[$segment])) {
                     continue 2;
                 }
 
@@ -368,9 +368,7 @@ class ArrayUtils
 
             // Unset the target element
             $lastSegment = $segments[$segmentCount - 1];
-            if (isset($current[$lastSegment])) {
-                unset($current[$lastSegment]);
-            }
+            unset($current[$lastSegment]);
         }
 
         return $result;

@@ -330,15 +330,18 @@ class ArrayUtils
     /**
      * Unsets values in a nested array based on provided paths
      *
-     * @param array  $array     The input array to modify
-     * @param array  $paths     Array of paths where each path is a string with elements separated by delimiter
-     * @param string $delimiter The delimiter used to separate path elements (default: '/')
-     * @return array The modified array
      *
      * @example
-     * $array = ['user' => ['profile' => ['name' => 'John', 'age' => 30]]];
-     * $paths = ['user/profile/age'];
-     * ArrayUtils::unsetNestedArray($array, $paths); // removes age from nested array
+     * $array = [
+     *   'users' => [
+     *     'addresses' => [
+     *       ['street' => '123 Main St', 'city' => 'New York'],
+     *       ['street' => '456 Elm St', 'city' => 'Boston']
+     *     ]
+     *   ]
+     * ];
+     * $paths = ['users/addresses/[]/street'];
+     * // This will remove 'street' from all address entries
      */
     public static function unsetNestedArray(array $array, array $paths, string $delimiter = '/'): array
     {
@@ -353,22 +356,72 @@ class ArrayUtils
             // Reference to navigate through array
             $current = &$result;
 
-            // Navigate to the parent of the target element
-            $segmentCount = count($segments);
-            for ($i = 0; $i < $segmentCount - 1; $i++) {
-                $segment = $segments[$i];
+            // Track whether we're processing a wildcard array segment
+            $isWildcardArray = false;
 
-                // If segment doesn't exist or is not an array, skip this path
-                if (!array_key_exists($segment, $current) || !is_array($current[$segment])) {
+            // Navigate through the array
+            $segmentCount = count($segments);
+            foreach ($segments as $i => $value) {
+                $segment = $value;
+
+                // Handle wildcard array notation
+                if ($segment === '[]') {
+                    $isWildcardArray = true;
+                    continue;
+                }
+
+                // If we were previously in a wildcard array context
+                if ($isWildcardArray) {
+                    // Current segment must be operated on for ALL array elements
+                    if (!is_array($current)) {
+                        // Not an array, reset and skip to next path
+                        continue 2;
+                    }
+
+                    // If it's the last segment, unset from all array elements
+                    if ($i === $segmentCount - 1) {
+                        foreach ($current as &$item) {
+                            if (is_array($item) && array_key_exists($segment, $item)) {
+                                unset($item[$segment]);
+                            }
+                        }
+                        unset($item);
+                        break;
+                    }
+
+                    // Prepare to go deeper in each array element
+                    $nextSegment = $segments[$i + 1];
+                    $newCurrent  = [];
+                    foreach ($current as &$item) {
+                        if (is_array($item) &&
+                            array_key_exists($segment, $item) &&
+                            is_array($item[$segment])) {
+                            $newCurrent[] = &$item[$segment];
+                        }
+                    }
+                    unset($item);
+                    $current = &$newCurrent;
+
+                    // Reset wildcard flag
+                    $isWildcardArray = false;
+                    continue;
+                }
+
+                // Normal array navigation
+                if (!is_array($current) || !array_key_exists($segment, $current)) {
+                    // Path doesn't exist, skip to next path
                     continue 2;
                 }
 
+                // Last segment - unset the value
+                if ($i === $segmentCount - 1) {
+                    unset($current[$segment]);
+                    break;
+                }
+
+                // Continue navigating
                 $current = &$current[$segment];
             }
-
-            // Unset the target element
-            $lastSegment = $segments[$segmentCount - 1];
-            unset($current[$lastSegment]);
         }
 
         return $result;

@@ -763,7 +763,7 @@ class StringUtils
      */
     public static function utf8ToLatin1(string $string): string
     {
-        $clean     = self::removeEmojisAndModifiers($string);
+        $clean     = self::replaceNonPrintable(self::removeEmojisAndModifiers($string));
         $converted = iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $clean);
 
         return ($converted === false) ? $clean : $converted;

@@ -266,5 +266,26 @@ class StringUtilsTest extends TestCase
         $this->assertTrue(mb_check_encoding($converted, 'ISO-8859-1'));
     }
 
+    public function testUtf8ToLatin1_SpecialMix()
+    {
+        $strings = [
+            'YOURPRIVATELIBRARY「宗教に悩んだ時に読む本」'                                              => 'YOURPRIVATELIBRARY?????????????',
+            'GRETELSMAGICALOVEN:SPIN-OFFDRAMAⅢ-PASTRYCHEFHANSELSTIME-TRAVELMAGIC'                     => 'GRETELSMAGICALOVEN:SPIN-OFFDRAMAIII-PASTRYCHEFHANSELSTIME-TRAVELMAGIC',
+            'THE74THNHKREDANDWHITEYEAR-ENDSONGFESTIVALPART１'                                          => 'THE74THNHKREDANDWHITEYEAR-ENDSONGFESTIVALPART1',
+            'NIGHTDRAMASERIAL　"ALOVESTORYINVIRTUALREALITY"EPS.2'                                      => 'NIGHTDRAMASERIAL "ALOVESTORYINVIRTUALREALITY"EPS.2',
+            'NHKREGIONALSHOWCASES:＃TEREFUKU--FUKUOKAHUMANDOCUMENTARY'                                 => 'NHKREGIONALSHOWCASES:#TEREFUKU--FUKUOKAHUMANDOCUMENTARY',
+            'NHKREGIONALSHOWCASES:＃TEREFUKU--FUKUOKAHUMANDOCUMENTARY(R)'                              => 'NHKREGIONALSHOWCASES:#TEREFUKU--FUKUOKAHUMANDOCUMENTARY(R)',
+            'NIGHTDRAMASERIAL"HOSHISHINICHISSHORTSTORY:THEDEPARTMENTOFSUSTAINABLELIVING"「生活維持省」' => 'NIGHTDRAMASERIAL"HOSHISHINICHISSHORTSTORY:THEDEPARTMENTOFSUSTAINABLELIVING"???????',
+            'ラーメンJAPAN15MIN.'                                                                     => '????JAPAN15MIN.',
+            '＃SUPERMARKETLOVER"MEXICO"'                                                               => '#SUPERMARKETLOVER"MEXICO"',
+        ];
+        foreach ($strings as $input => $expected) {
+            $converted = StringUtils::utf8ToLatin1($input);
+
+            $this->assertSame($expected, $converted);
+            $this->assertTrue(mb_check_encoding($converted, 'ISO-8859-1'));
+        }
+    }
+
 
 }

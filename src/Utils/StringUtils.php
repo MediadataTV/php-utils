@@ -752,5 +752,20 @@ class StringUtils
         );
     }
 
+    /**
+     * Converts a UTF-8 string to ISO-8859-1 (latin1) only if needed.
+     * If already latin1, returns unchanged.
+     *
+     * @param string $string
+     * @return string
+     */
+    public static function utf8ToLatin1(string $string): string
+    {
+        $clean     = self::removeEmojisAndModifiers($string);
+        $converted = iconv('UTF-8', 'ISO-8859-1//TRANSLIT//IGNORE', $clean);
+
+        return ($converted === false) ? $clean : $converted;
+    }
+
 
 }

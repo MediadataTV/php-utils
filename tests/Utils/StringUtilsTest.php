@@ -216,4 +216,55 @@ class StringUtilsTest extends TestCase
         }
     }
 
+    public function testUtf8ToLatin1_Utf8String()
+    {
+        $utf8String = 'Cürdédrágön3:La malédiction du sorcier';
+        $converted  = StringUtils::utf8ToLatin1($utf8String);
+
+        // Convert result back to UTF-8 for comparison
+        $convertedUtf8 = iconv('ISO-8859-1', 'UTF-8', $converted);
+
+        $this->assertEquals($utf8String, $convertedUtf8);
+        $this->assertTrue(mb_check_encoding($converted, 'ISO-8859-1'));
+    }
+
+    public function testUtf8ToLatin1_AlreadyLatin1()
+    {
+        $latin1String = 'Curdedragon3:La malediction du sorcier';
+        $converted    = StringUtils::utf8ToLatin1($latin1String);
+
+        $this->assertEquals($latin1String, $converted);
+        $this->assertTrue(mb_check_encoding($converted, 'ISO-8859-1'));
+    }
+
+    public function testUtf8ToLatin1_EmojiOrUnconvertible()
+    {
+        $utf8String = 'Dragon 🐉';
+        $converted  = StringUtils::utf8ToLatin1($utf8String);
+        $this->assertEquals('Dragon', $converted); // Emoji removed
+        $this->assertTrue(mb_check_encoding($converted, 'ISO-8859-1'));
+    }
+
+
+    public function testUtf8ToLatin1_IconvFailure()
+    {
+        // iconv fails if given invalid byte sequences (simulate that)
+        // For this, use random invalid bytes (in real cases, this rarely happens)
+        $invalidUtf8 = '\xC3\x28'; // Invalid 2-byte sequence
+        $converted   = StringUtils::utf8ToLatin1($invalidUtf8);
+
+        // Should return the original string
+        $this->assertEquals($invalidUtf8, $converted);
+    }
+
+    public function testUtf8ToLatin1_EmptyString()
+    {
+        $empty     = '';
+        $converted = StringUtils::utf8ToLatin1($empty);
+
+        $this->assertSame('', $converted);
+        $this->assertTrue(mb_check_encoding($converted, 'ISO-8859-1'));
+    }
+
+
 }

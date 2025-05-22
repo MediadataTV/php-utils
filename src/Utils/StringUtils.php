@@ -264,21 +264,23 @@ class StringUtils
     }
 
     /**
-     * @param $string
-     *
+     * @param string $string
+     * @param bool   $replaceNonPrintable
      * @return array|string|string[]
      */
-    public static function transliterateToAscii($string)
+    public static function transliterateToAscii(string $string, bool $replaceNonPrintable = false): string
     {
         $string = strtr($string, UTF8ToAsciiMap::MAP);
+        if ($replaceNonPrintable) {
+            $string = self::replaceNonPrintable($string);
+        }
         $string = preg_replace('/[‚‚]/u', ',', $string);
         $string = preg_replace('/[`‛′’‘]/u', "'", $string);
         $string = preg_replace('/[″“”«»„]/u', '"', $string);
         $string = preg_replace('/[—–―−–‾⌐─↔→←]/u', '-', $string);
         $string = preg_replace('/[  ]/u', ' ', $string);
-        $string = str_replace('…', '...', $string);
 
-        return $string;
+        return str_replace('…', '...', $string);
     }
 
     /**

@@ -76,8 +76,14 @@ class ArrayUtilsTest extends TestCase
                         ['phone' => '0987654321', 'type' => 'work'],
                     ],
                     'addresses' => [
-                        ['street' => '123 Main St', 'city' => 'New York'],
-                        ['street' => '456 Elm St', 'city' => 'Boston'],
+                        [
+                            'street' => '123 Main St', 'city' => 'New York',
+                            'geo'    => ['lat' => 40.7128, 'lng' => -74.0060, 'accuracy' => 100],
+                        ],
+                        [
+                            'street' => '456 Elm St', 'city' => 'Boston',
+                            'geo'    => ['lat' => 42.3601, 'lng' => -71.0589, 'accuracy' => 1],
+                        ],
                     ],
                     'settings'  => [
                         'theme'         => 'dark',
@@ -87,8 +93,32 @@ class ArrayUtilsTest extends TestCase
             ],
             'products' => [
                 'inventory' => [
-                    ['name' => 'Apple', 'quantity' => 10],
-                    ['name' => 'Banana', 'quantity' => 20],
+                    [
+                        'name'  => 'Apple', 'quantity' => 10,
+                        'store' => [
+                            [
+                                'country' => 'Spain', 'city' => 'Barcelona', 'year' => 2025,
+                                'meta'    => ['created_at' => '2025-01-01', 'updated_at' => '2025-06-01'],
+                            ],
+                            [
+                                'country' => 'Spain', 'city' => 'Madrid', 'year' => 2024,
+                                'meta'    => ['created_at' => '2024-01-01', 'updated_at' => '2024-06-01'],
+                            ],
+                        ],
+                    ],
+                    [
+                        'name'  => 'Banana', 'quantity' => 20,
+                        'store' => [
+                            [
+                                'country' => 'Spain', 'city' => 'Barcelona', 'year' => 2025,
+                                'meta'    => ['created_at' => '2025-01-01', 'updated_at' => '2025-06-01'],
+                            ],
+                            [
+                                'country' => 'Spain', 'city' => 'Madrid', 'year' => 2024,
+                                'meta'    => ['created_at' => '2024-01-01', 'updated_at' => '2024-06-01'],
+                            ],
+                        ],
+                    ],
                 ],
             ],
             'empty'    => [],
@@ -437,7 +467,7 @@ class ArrayUtilsTest extends TestCase
         $this->assertArrayNotHasKey('type', $result['user']['profile']['contacts'][1]);
     }
 
-    public function testWildcardWithDeepNesting(): void
+    public function testWildcardWithLoopHash(): void
     {
         $paths  = ['user/profile/addresses/[]/city'];
         $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
@@ -447,6 +477,46 @@ class ArrayUtilsTest extends TestCase
         $this->assertArrayNotHasKey('city', $result['user']['profile']['addresses'][1]);
         $this->assertSame('123 Main St', $result['user']['profile']['addresses'][0]['street']);
         $this->assertSame('456 Elm St', $result['user']['profile']['addresses'][1]['street']);
+    }
+
+    public function testWildcardWithLoopHashDeepNested(): void
+    {
+        $paths  = ['user/profile/addresses/[]/geo/accuracy'];
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        $this->assertCount(2, $result['user']['profile']['addresses']);
+        $this->assertArrayHasKey('geo', $result['user']['profile']['addresses'][0]);
+        $this->assertArrayHasKey('geo', $result['user']['profile']['addresses'][1]);
+        $this->assertArrayHasKey('lat', $result['user']['profile']['addresses'][0]['geo']);
+        $this->assertArrayHasKey('lat', $result['user']['profile']['addresses'][1]['geo']);
+        $this->assertArrayHasKey('lng', $result['user']['profile']['addresses'][0]['geo']);
+        $this->assertArrayHasKey('lng', $result['user']['profile']['addresses'][1]['geo']);
+        $this->assertArrayNotHasKey('accuracy', $result['user']['profile']['addresses'][0]['geo']);
+        $this->assertArrayNotHasKey('accuracy', $result['user']['profile']['addresses'][1]['geo']);
+        $this->assertSame('123 Main St', $result['user']['profile']['addresses'][0]['street']);
+        $this->assertSame('456 Elm St', $result['user']['profile']['addresses'][1]['street']);
+    }
+
+    public function testDoubleWildcardDeepNestedRemoval(): void
+    {
+        $paths = [
+            'products/inventory/[]/store/[]/year',
+            'products/inventory/[]/store/[]/meta/created_at',
+        ];
+
+        $result = ArrayUtils::unsetNestedArray($this->testArrayUnset, $paths);
+
+        foreach ($result['products']['inventory'] as $product) {
+            foreach ($product['store'] as $store) {
+                $this->assertArrayHasKey('country', $store);
+                $this->assertArrayHasKey('city', $store);
+                $this->assertArrayHasKey('meta', $store);
+                $this->assertArrayHasKey('updated_at', $store['meta']);
+
+                $this->assertArrayNotHasKey('year', $store);
+                $this->assertArrayNotHasKey('created_at', $store['meta']);
+            }
+        }
     }
 
     public function testWildcardMixedWithNormalPath(): void

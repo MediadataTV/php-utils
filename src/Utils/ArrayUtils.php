@@ -372,39 +372,20 @@ class ArrayUtils
 
                 // If we were previously in a wildcard array context
                 if ($isWildcardArray) {
-                    // Current segment must be operated on for ALL array elements
                     if (!is_array($current)) {
-                        // Not an array, reset and skip to next path
                         continue 2;
                     }
 
-                    // If it's the last segment, unset from all array elements
-                    if ($i === $segmentCount - 1) {
-                        foreach ($current as &$item) {
-                            if (is_array($item) && array_key_exists($segment, $item)) {
-                                unset($item[$segment]);
-                            }
-                        }
-                        unset($item);
-                        break;
-                    }
-
-                    // Prepare to go deeper in each array element
-                    $nextSegment = $segments[$i + 1];
-                    $newCurrent  = [];
                     foreach ($current as &$item) {
-                        if (is_array($item) &&
-                            array_key_exists($segment, $item) &&
-                            is_array($item[$segment])) {
-                            $newCurrent[] = &$item[$segment];
+                        if (!is_array($item)) {
+                            continue;
                         }
+
+                        $subPath = implode($delimiter, array_slice($segments, $i));
+                        $item    = self::unsetNestedArray($item, [$subPath], $delimiter);
                     }
                     unset($item);
-                    $current = &$newCurrent;
-
-                    // Reset wildcard flag
-                    $isWildcardArray = false;
-                    continue;
+                    break;
                 }
 
                 // Normal array navigation

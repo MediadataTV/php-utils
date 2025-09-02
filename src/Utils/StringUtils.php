@@ -632,25 +632,63 @@ class StringUtils
      * @return mixed
      * @throws JsonException
      */
-    public static function searchJSInString($jsString, $search)
+    public static function searchJSInString($jsString, $search, $removeSearchString = false, $putBeginBracket = true, $putEndBracket = true)
     {
         $readPosition = (strpos($jsString, $search) + mb_strlen($search));
         $openBraces   = 1;
+        if($removeSearchString){
+            $search = '';
+        }
         while ($openBraces > 0) {
             $char   = $jsString[$readPosition];
-            $search .= $char;
             if ($char === '{') {
                 $openBraces++;
             }
             if ($char === '}') {
                 $openBraces--;
             }
+            if($openBraces > 0){
+                $search .= $char;
+            }
             $readPosition++;
         }
-        $search = trim(sprintf('{%s}', $search));
+        if($putBeginBracket){
+            $search = '{'. $search;
+        }
+        if($putEndBracket){
+            $search = $search . '}';
+        }
         $search = preg_replace('/(\w+):/iu', '"\1":', $search);
 
-        return json_decode($search, true, 512, JSON_THROW_ON_ERROR);
+        return $search;
+    }
+
+    public static function jsObjectToArray(string $js): array {
+        $js = preg_replace('/^(const|let|var)\s+\w+\s*=\s*/', '', trim($js));
+        $js = rtrim($js, "; \t\n\r\0\x0B");
+
+        // Put quotes to var or object key names
+        $js = preg_replace('/(\s*)([a-zA-Z0-9_]+)\s*:/', '$1"$2":', $js);
+
+        // Normalize strings to be quoted with double quote
+        $js = preg_replace_callback(
+            "/'((?:\\\\'|[^'])*?)'/",
+            function ($matches) {
+                $str = $matches[1];
+                $str = str_replace("\\'", "'", $str);
+                $str = str_replace('"', '\\"', $str);
+                return '"' . $str . '"';
+            },
+            $js
+        );
+
+
+        $array = json_decode($js, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new \RuntimeException("Error al convertir JS a PHP array: " . json_last_error_msg() . "\nInput: $js");
+        }
+
+        return $array;
     }
 
     /**
